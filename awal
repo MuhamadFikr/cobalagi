@@ -1,225 +1,173 @@
-import os
-import shutil
-
-# Direktori dasar proyek
-project_dir = "/mnt/data/portal-rapot-ipb"
-
-# Struktur direktori
-directories = [
-    os.path.join(project_dir, "frontend"),
-    os.path.join(project_dir, "backend/templates"),
-    os.path.join(project_dir, "backend/static/css"),
-    os.path.join(project_dir, "backend/static/js"),
-    os.path.join(project_dir, "db"),
-]
-
-# Konten untuk masing-masing file
-files_content = {
-    # Frontend file
-    "frontend/index.html": """
+# Save the HTML code as a file named "index.html"
+file_path = "/mnt/data/index.html"
+html_content = """
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Rapot IPB</title>
-  <link rel="stylesheet" href="../backend/static/css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAPOTAN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #4e73df, #1cc88a);
+            color: #fff;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .header img {
+            width: 100px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #1cc88a;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #fff;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #17a673;
+        }
+
+        .menu {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #fff;
+            background: #4e73df;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        .menu a:hover {
+            background: #375a7f;
+        }
+
+        .section {
+            margin-top: 30px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table th {
+            background: #4e73df;
+            color: #fff;
+        }
+
+        .feedback {
+            margin-top: 20px;
+        }
+
+        .feedback textarea {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Portal Rapot BEM Fahutan 2025</h1>
-  </header>
-  <main>
-    <form action="/login" method="post">
-      <h2>Login</h2>
-      <label for="username">Username:</label>
-      <input type="text" id="username" name="username" required><br>
-      <label for="password">Password:</label>
-      <input type="password" id="password" name="password" required><br>
-      <button type="submit">Login</button>
-    </form>
-  </main>
-</body>
-</html>
-""",
-    # Backend main application
-    "backend/app.py": """
-from flask import Flask, render_template, request, redirect, url_for, session
+    <div class="header">
+        <img src="logo-fahutann.png" alt="Logo Fahutann">
+        <h1>RAPOTAN</h1>
+    </div>
 
-app = Flask(__name__)
-app.secret_key = 'supersecretkey'
+    <div class="container">
+        <h2>Login</h2>
+        <form action="/login" method="post">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="button">Login</button>
+        </form>
+    </div>
 
-# Dummy database
-users = {
-    "admin": {"password": "admin123", "role": "admin", "data": {}},
-    "user1": {
-        "password": "user123",
-        "role": "user",
-        "data": {
-            "nama": "John Doe",
-            "ttl": "Bogor, 1 Januari 2000",
-            "fakultas": "Fahutan",
-            "departemen": "Manajemen Hutan",
-            "jabatan": "Anggota",
-        },
-        "rapot": {
-            "Triwulan 1": {"nilai": 85, "indikator": "Kerjasama", "deskripsi": "Sangat baik dalam tim"},
-            "Triwulan 2": {"nilai": 88, "indikator": "Kepemimpinan", "deskripsi": "Memiliki jiwa pemimpin yang kuat"},
-            "Triwulan 3": {"nilai": 90, "indikator": "Inovasi", "deskripsi": "Kreatif dan inovatif"},
-        },
-        "feedback": [],
-    },
-}
+    <div class="container">
+        <h2>Menu User</h2>
+        <div class="menu">
+            <a href="/data-diri">Data Diri</a>
+            <a href="/nilai">Nilai Rapot</a>
+            <a href="/feedback">Feedback</a>
+        </div>
+    </div>
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+    <div class="container section" id="admin">
+        <h2>Menu Admin</h2>
+        <form action="/admin-input" method="post">
+            <div class="form-group">
+                <label for="nim">NIM</label>
+                <input type="text" id="nim" name="nim" required>
+            </div>
+            <div class="form-group">
+                <label for="nilai">Input Nilai</label>
+                <textarea id="nilai" name="nilai" required></textarea>
+            </div>
+            <button type="submit" class="button">Input Data</button>\n        </form>\n    </div>\n</body>\n</html>\n"""
 
-@app.route('/login', methods=['POST'])
-def login():
-    username = request.form['username']
-    password = request.form['password']
-    user = users.get(username)
-    if user and user['password'] == password:
-        session['username'] = username
-        session['role'] = user['role']
-        return redirect(url_for('dashboard'))
-    return "Invalid username or password", 401
+with open(file_path, "w") as file:
+    file.write(html_content)
 
-@app.route('/dashboard')
-def dashboard():
-    if 'username' not in session:
-        return redirect(url_for('index'))
-    username = session['username']
-    role = session['role']
-    if role == "admin":
-        return render_template('admin.html', username=username)
-    user_data = users[username]
-    return render_template('user.html', username=username, data=user_data['data'], rapot=user_data['rapot'])
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('index'))
-
-if __name__ == "__main__":
-    app.run(debug=True)
-""",
-    # User dashboard template
-    "backend/templates/user.html": """
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard User</title>
-</head>
-<body>
-  <header>
-    <h1>Selamat Datang, {{ username }}</h1>
-  </header>
-  <main>
-    <section>
-      <h2>Data Diri</h2>
-      <p>Nama: {{ data.nama }}</p>
-      <p>TTL: {{ data.ttl }}</p>
-      <p>Fakultas: {{ data.fakultas }}</p>
-      <p>Departemen: {{ data.departemen }}</p>
-      <p>Jabatan: {{ data.jabatan }}</p>
-    </section>
-    <section>
-      <h2>Nilai Rapot</h2>
-      <ul>
-        {% for triwulan, info in rapot.items() %}
-        <li>{{ triwulan }}: {{ info.nilai }} ({{ info.indikator }}) - {{ info.deskripsi }}</li>
-        {% endfor %}
-      </ul>
-    </section>
-    <a href="/logout">Logout</a>
-  </main>
-</body>
-</html>
-""",
-    # Admin dashboard template
-    "backend/templates/admin.html": """
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-</head>
-<body>
-  <header>
-    <h1>Admin Dashboard</h1>
-  </header>
-  <main>
-    <h2>Menu Admin</h2>
-    <ul>
-      <li><a href="#">Input Data Rapot</a></li>
-      <li><a href="#">Kelola Pengguna</a></li>
-    </ul>
-    <a href="/logout">Logout</a>
-  </main>
-</body>
-</html>
-""",
-    # CSS Styles
-    "backend/static/css/styles.css": """
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f4f4f9;
-}
-header {
-  background-color: #007bff;
-  color: white;
-  padding: 20px;
-  text-align: center;
-}
-main {
-  padding: 20px;
-}
-h1, h2 {
-  color: #333;
-}
-ul {
-  list-style: none;
-  padding: 0;
-}
-ul li {
-  margin: 5px 0;
-}
-form {
-  margin: 20px 0;
-}
-form input {
-  margin: 5px 0;
-}
-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  cursor: pointer;
-}
-""",
-    # Database README
-    "db/README.md": "# Database Directory\n\nPlace SQLite or other database files here."
-}
-
-# Membuat struktur direktori dan menulis file
-for directory in directories:
-    os.makedirs(directory, exist_ok=True)
-
-for filepath, content in files_content.items():
-    full_path = os.path.join(project_dir, filepath)
-    with open(full_path, "w") as file:
-        file.write(content)
-
-# Membuat arsip ZIP untuk proyek
-zip_path = "/mnt/data/portal-rapot-ipb.zip"
-shutil.make_archive(project_dir, 'zip', project_dir)
-
-zip_path
+file_path
