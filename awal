@@ -1,0 +1,225 @@
+import os
+import shutil
+
+# Direktori dasar proyek
+project_dir = "/mnt/data/portal-rapot-ipb"
+
+# Struktur direktori
+directories = [
+    os.path.join(project_dir, "frontend"),
+    os.path.join(project_dir, "backend/templates"),
+    os.path.join(project_dir, "backend/static/css"),
+    os.path.join(project_dir, "backend/static/js"),
+    os.path.join(project_dir, "db"),
+]
+
+# Konten untuk masing-masing file
+files_content = {
+    # Frontend file
+    "frontend/index.html": """
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Rapot IPB</title>
+  <link rel="stylesheet" href="../backend/static/css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Portal Rapot BEM Fahutan 2025</h1>
+  </header>
+  <main>
+    <form action="/login" method="post">
+      <h2>Login</h2>
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required><br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required><br>
+      <button type="submit">Login</button>
+    </form>
+  </main>
+</body>
+</html>
+""",
+    # Backend main application
+    "backend/app.py": """
+from flask import Flask, render_template, request, redirect, url_for, session
+
+app = Flask(__name__)
+app.secret_key = 'supersecretkey'
+
+# Dummy database
+users = {
+    "admin": {"password": "admin123", "role": "admin", "data": {}},
+    "user1": {
+        "password": "user123",
+        "role": "user",
+        "data": {
+            "nama": "John Doe",
+            "ttl": "Bogor, 1 Januari 2000",
+            "fakultas": "Fahutan",
+            "departemen": "Manajemen Hutan",
+            "jabatan": "Anggota",
+        },
+        "rapot": {
+            "Triwulan 1": {"nilai": 85, "indikator": "Kerjasama", "deskripsi": "Sangat baik dalam tim"},
+            "Triwulan 2": {"nilai": 88, "indikator": "Kepemimpinan", "deskripsi": "Memiliki jiwa pemimpin yang kuat"},
+            "Triwulan 3": {"nilai": 90, "indikator": "Inovasi", "deskripsi": "Kreatif dan inovatif"},
+        },
+        "feedback": [],
+    },
+}
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form['username']
+    password = request.form['password']
+    user = users.get(username)
+    if user and user['password'] == password:
+        session['username'] = username
+        session['role'] = user['role']
+        return redirect(url_for('dashboard'))
+    return "Invalid username or password", 401
+
+@app.route('/dashboard')
+def dashboard():
+    if 'username' not in session:
+        return redirect(url_for('index'))
+    username = session['username']
+    role = session['role']
+    if role == "admin":
+        return render_template('admin.html', username=username)
+    user_data = users[username]
+    return render_template('user.html', username=username, data=user_data['data'], rapot=user_data['rapot'])
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
+if __name__ == "__main__":
+    app.run(debug=True)
+""",
+    # User dashboard template
+    "backend/templates/user.html": """
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard User</title>
+</head>
+<body>
+  <header>
+    <h1>Selamat Datang, {{ username }}</h1>
+  </header>
+  <main>
+    <section>
+      <h2>Data Diri</h2>
+      <p>Nama: {{ data.nama }}</p>
+      <p>TTL: {{ data.ttl }}</p>
+      <p>Fakultas: {{ data.fakultas }}</p>
+      <p>Departemen: {{ data.departemen }}</p>
+      <p>Jabatan: {{ data.jabatan }}</p>
+    </section>
+    <section>
+      <h2>Nilai Rapot</h2>
+      <ul>
+        {% for triwulan, info in rapot.items() %}
+        <li>{{ triwulan }}: {{ info.nilai }} ({{ info.indikator }}) - {{ info.deskripsi }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    <a href="/logout">Logout</a>
+  </main>
+</body>
+</html>
+""",
+    # Admin dashboard template
+    "backend/templates/admin.html": """
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard</h1>
+  </header>
+  <main>
+    <h2>Menu Admin</h2>
+    <ul>
+      <li><a href="#">Input Data Rapot</a></li>
+      <li><a href="#">Kelola Pengguna</a></li>
+    </ul>
+    <a href="/logout">Logout</a>
+  </main>
+</body>
+</html>
+""",
+    # CSS Styles
+    "backend/static/css/styles.css": """
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f9;
+}
+header {
+  background-color: #007bff;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+main {
+  padding: 20px;
+}
+h1, h2 {
+  color: #333;
+}
+ul {
+  list-style: none;
+  padding: 0;
+}
+ul li {
+  margin: 5px 0;
+}
+form {
+  margin: 20px 0;
+}
+form input {
+  margin: 5px 0;
+}
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+""",
+    # Database README
+    "db/README.md": "# Database Directory\n\nPlace SQLite or other database files here."
+}
+
+# Membuat struktur direktori dan menulis file
+for directory in directories:
+    os.makedirs(directory, exist_ok=True)
+
+for filepath, content in files_content.items():
+    full_path = os.path.join(project_dir, filepath)
+    with open(full_path, "w") as file:
+        file.write(content)
+
+# Membuat arsip ZIP untuk proyek
+zip_path = "/mnt/data/portal-rapot-ipb.zip"
+shutil.make_archive(project_dir, 'zip', project_dir)
+
+zip_path
